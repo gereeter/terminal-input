@@ -1,0 +1,19 @@
+[package]
+name = "terminal-input"
+version = "0.1.0"
+authors = ["Jonathan S <gereeter+code@gmail.com>"]
+edition = "2018"
+readme = "README.md"
+license = "MIT"
+description = "Cross-terminal precise decoding of modified keys and other input events"
+repository = "https://github.com/gereeter/terminal-input"
+categories = ["command-line-interface"]
+keywords = ["curses", "mouse", "ansi", "escape", "ctrl"]
+
+[features]
+default = ["ncurses-ext"]
+ncurses-ext = []
+
+[dependencies]
+ncurses = "5.99.0"
+const-cstr = "0.3.0"
