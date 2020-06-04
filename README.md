@@ -18,8 +18,8 @@ systems, issues and pull requests are welcome.
 | Ctrl+Shift | keyboard only | keyboard only, often release only? | no, messes with input encoding | some specials only, others either capitalized or Ctrl but not both | some specials only, others captial or Ctrl but not both
 | Alt+Shift | keyboard only | yes | no | mouse buttons right,scroll | scroll only
 | Ctrl+Alt+Shift | keyboard only | keyboard only | no, messes with input encoding | mouse buttons right, scroll | capital or Ctrl, not both
-| key releases | no | modified only | no | no | no
-| key repeats | no | no (BUG?) | no | no | no
+| key releases | no | modified and specials only | no | no | no
+| key repeats | no | modified and specials only | no | no | no
 | Ctrl+Delete | yes | yes | yes | yes | yes
 | Ctrl+Backspace | looks like Backspace | yes | looks like \u{8} | looks like Backspace | looks like \u{8}
 | Shift+Backspace | looks like Shift+\u{8} | yes | looks like Backspace | looks like Backspace | looks like \u{8}

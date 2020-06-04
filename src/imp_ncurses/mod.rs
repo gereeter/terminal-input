@@ -558,22 +558,35 @@ impl InputStream {
                     } else if let Special(2201) = input {
                         self.kitty_full_mode_state = KittyFullModeState::Off;
                         let modifiers = Modifiers(mode);
-                        // FIXME: more complete translation, unify different input types
+                        // FIXME: Kitty does not provide an indication of the correct capital version of a shifted
+                        // key; decide on a strategy for dealing with that since keyboard layouts aren't always consistent
+                        // Note that without Ctrl or Alt, this protocol is not used, so the capital variants are available
                         let translated = match key_so_far {
-                            6..=15 => if modifiers & SHIFT != NONE {
-                                // FIXME capitalize numbers?
-                                Special(key_so_far as i32 + 600)
-                            } else {
+                            0 => Codepoint(' '),
+                            1 if modifiers & SHIFT == NONE => Codepoint('\''),
+                            2 if modifiers & SHIFT == NONE => Codepoint(','),
+                            3 if modifiers & SHIFT == NONE => Codepoint('-'),
+                            4 if modifiers & SHIFT == NONE => Codepoint('.'),
+                            5 if modifiers & SHIFT == NONE => Codepoint('/'),
+                            6..=15 if modifiers & SHIFT == NONE => {
                                 Codepoint(std::char::from_u32('0' as u32 + key_so_far as u32 - 6).unwrap())
                             },
+                            16 if modifiers & SHIFT == NONE => Codepoint(';'),
+                            17 if modifiers & SHIFT == NONE => Codepoint('='),
                             18..=43 => if modifiers & SHIFT != NONE { // If shift, capitalize the letter
                                 Codepoint(std::char::from_u32('A' as u32 + key_so_far as u32 - 18).unwrap())
                             } else {
                                 Codepoint(std::char::from_u32('a' as u32 + key_so_far as u32 - 18).unwrap())
                             },
+                            44 if modifiers & SHIFT == NONE => Codepoint('['),
+                            45 if modifiers & SHIFT == NONE => Codepoint('\\'),
+                            46 if modifiers & SHIFT == NONE => Codepoint(']'),
+                            47 if modifiers & SHIFT == NONE => Codepoint('`'),
                             50 => Codepoint('\u{1b}'), // Escape
+                            51 => Codepoint('\n'),
                             52 => Codepoint('\t'),
                             53 => Special(ncurses::KEY_BACKSPACE),
+                            54 => Special(ncurses::KEY_IC),
                             55 => Special(ncurses::KEY_DC),
                             56 => Special(ncurses::KEY_RIGHT),
                             57 => Special(ncurses::KEY_LEFT),
@@ -584,6 +597,17 @@ impl InputStream {
                             62 => Special(ncurses::KEY_HOME),
                             63 => Special(ncurses::KEY_END),
                             69 => Special(ncurses::KEY_F1),
+                            70 => Special(ncurses::KEY_F2),
+                            71 => Special(ncurses::KEY_F3),
+                            72 => Special(ncurses::KEY_F4),
+                            73 => Special(ncurses::KEY_F5),
+                            74 => Special(ncurses::KEY_F6),
+                            75 => Special(ncurses::KEY_F7),
+                            76 => Special(ncurses::KEY_F8),
+                            77 => Special(ncurses::KEY_F9),
+                            78 => Special(ncurses::KEY_F10),
+                            79 => Special(ncurses::KEY_F11),
+                            80 => Special(ncurses::KEY_F12),
                             _ => Special(key_so_far as i32 + 600)
                         };
                         return Ok(match key_type {
