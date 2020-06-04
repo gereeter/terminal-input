@@ -428,8 +428,17 @@ impl InputStream {
                 Codepoint(chr) if (chr as u32) > 128 && (chr as u32) < 155 // TODO: Consider whitelist? Cancel is sometimes used for Backspace
                     => return Ok(KeyPress { modifiers: CTRL | ALT, key: Codepoint(std::char::from_u32(chr as u32 - 32).unwrap()), is_repeat: false }),
                 // AltSendsEscape + either a control character (assumed to be from Ctrl) or a printable character
-                Special(code @ 3001..=3026) => return Ok(KeyPress { modifiers: CTRL | ALT, key: Codepoint(std::char::from_u32(code as u32 - 3000 + 96).unwrap()), is_repeat: false}),
-                Special(code @ 3000..=3255) => return Ok(KeyPress { modifiers: ALT, key: Codepoint(std::char::from_u32(code as u32 - 3000).unwrap()), is_repeat: false }),
+                Special(code @ 3000..=3255) => if code < 3027 && code != 3008 && code != 3009 && code != 3013 {
+                    // Note that we actually treat \n as a control code originating from Ctrl+j, unlike above; this is because the actual Enter
+                    // key will be sent as a carriage return.
+                    return Ok(KeyPress { modifiers: CTRL | ALT, key: Codepoint(std::char::from_u32(code as u32 - 3000 + 96).unwrap()), is_repeat: false });
+                } else if code == 3013 {
+                    // The Enter key at a terminal actually sends \r, not \n. Normally, either the ICRNL termios flag translates it or
+                    // ncurses translates it, but we are handling it manually, so we need to translate ourselves.
+                    return Ok(KeyPress { modifiers: ALT, key: Codepoint('\n'), is_repeat: false });
+                } else {
+                    return Ok(KeyPress { modifiers: ALT, key: Codepoint(std::char::from_u32(code as u32 - 3000).unwrap()), is_repeat: false });
+                },
                 // XTerm-style modified keys that weren't in the Terminfo
                 Special(code @ 2300..=2399) => {
                     let base_code = code - 2300;
