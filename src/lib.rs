@@ -2,6 +2,7 @@ extern crate ncurses;
 #[macro_use] extern crate const_cstr;
 
 use core::ops::{BitOr, BitAnd};
+use core::convert::TryInto;
 
 mod imp_ncurses;
 
@@ -128,5 +129,13 @@ impl<'a> InputStream<'a> {
     // In testing, this tends to happen when scrolling sideways on xterm, for example.
     pub fn next_event(&mut self) -> Result<Event, ()> {
         self.inner.next_event(self.screen)
+    }
+
+    // Set the time delay after an escape character is received to distinguish between the escape
+    // key and automatic escape sequences.
+    pub fn set_escdelay(&mut self, escdelay: core::time::Duration) {
+        unsafe {
+            ncurses::ll::set_escdelay(escdelay.as_millis().try_into().unwrap_or(i32::MAX));
+        }
     }
 }
