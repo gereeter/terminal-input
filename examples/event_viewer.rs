@@ -2,6 +2,7 @@ extern crate ncurses;
 extern crate terminal_input;
 
 use std::io::Write as _;
+use std::os::raw::c_char;
 
 use terminal_input::{InputStream, Event, Modifiers, KeyInput};
 
@@ -14,6 +15,7 @@ impl Drop for Screen {
 }
 
 fn main() {
+    unsafe { ncurses::ll::setlocale(ncurses::LC_ALL, b"\0".as_ptr() as *const c_char); }
     let screen = Screen(ncurses::initscr());
     ncurses::scrollok(screen.0, true);
     let stdin = std::io::stdin();

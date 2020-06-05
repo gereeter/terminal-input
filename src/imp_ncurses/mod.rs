@@ -600,10 +600,10 @@ impl InputStream {
                             },
                             16 if modifiers & SHIFT == NONE => Codepoint(';'),
                             17 if modifiers & SHIFT == NONE => Codepoint('='),
-                            18..=43 => if modifiers & SHIFT != NONE { // If shift, capitalize the letter
-                                Codepoint(std::char::from_u32('A' as u32 + key_so_far as u32 - 18).unwrap())
-                            } else {
+                            18..=43 => if modifiers & SHIFT == NONE { // If shift, capitalize the letter
                                 Codepoint(std::char::from_u32('a' as u32 + key_so_far as u32 - 18).unwrap())
+                            } else {
+                                Codepoint(std::char::from_u32('A' as u32 + key_so_far as u32 - 18).unwrap())
                             },
                             44 if modifiers & SHIFT == NONE => Codepoint('['),
                             45 if modifiers & SHIFT == NONE => Codepoint('\\'),
@@ -635,6 +635,17 @@ impl InputStream {
                             78 => Special(ncurses::KEY_F10),
                             79 => Special(ncurses::KEY_F11),
                             80 => Special(ncurses::KEY_F12),
+                            150..=181 => if modifiers & SHIFT == NONE { // Cyrillic characters
+                                Codepoint(std::char::from_u32('а' as u32 + key_so_far as u32 - 150).unwrap())
+                            } else {
+                                Codepoint(std::char::from_u32('А' as u32 + key_so_far as u32 - 150).unwrap())
+                            },
+                            // Ie with grave (ѐ) is skipped
+                            182 => if modifiers & SHIFT == NONE {
+                                Codepoint('ё')
+                            } else {
+                                Codepoint('Ё')
+                            },
                             _ => Special(key_so_far as i32 + 600)
                         };
                         return Ok(match key_type {
