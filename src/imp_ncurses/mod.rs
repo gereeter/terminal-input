@@ -635,6 +635,96 @@ impl InputStream {
                             78 => Special(ncurses::KEY_F10),
                             79 => Special(ncurses::KEY_F11),
                             80 => Special(ncurses::KEY_F12),
+                            // TODO: mark keypad inputs differently
+                            // TODO: Maybe don't assume that NumLock is on? Also depending on
+                            //   settings Shift can toggle NumLock
+                            94..=103 if modifiers & SHIFT == NONE => {
+                                Codepoint(std::char::from_u32('0' as u32 + key_so_far as u32 - 94).unwrap())
+                            },
+                            104 => Codepoint('.'),
+                            105 => Codepoint('/'),
+                            106 => Codepoint('*'),
+                            107 => Codepoint('-'),
+                            108 => Codepoint('+'),
+                            109 => Codepoint('\n'),
+                            110 => Codepoint('='),
+                            // End of keypad inputs
+                            119 if modifiers & SHIFT == NONE => Codepoint('+'),
+                            120 if modifiers & SHIFT == NONE => Codepoint('_'),
+                            122 if modifiers & SHIFT == NONE => Codepoint('!'),
+                            123 if modifiers & SHIFT == NONE => Codepoint('"'),
+                            124 if modifiers & SHIFT == NONE => Codepoint('#'),
+                            125 if modifiers & SHIFT == NONE => Codepoint('$'),
+                            126 if modifiers & SHIFT == NONE => Codepoint('&'),
+                            127 if modifiers & SHIFT == NONE => Codepoint('('),
+                            128 if modifiers & SHIFT == NONE => Codepoint(')'),
+                            129 if modifiers & SHIFT == NONE => Codepoint(':'),
+                            130 if modifiers & SHIFT == NONE => Codepoint('<'),
+                            131 if modifiers & SHIFT == NONE => Codepoint('>'),
+                            132 if modifiers & SHIFT == NONE => Codepoint('@'),
+                            // FIXME: see ù
+                            135 if modifiers & SHIFT == NONE => Codepoint('à'), // else Codepoint('À')
+                            136 => if modifiers & SHIFT == NONE {
+                                Codepoint('ä')
+                            } else {
+                                Codepoint('Ä')
+                            },
+                            137 => if modifiers & SHIFT == NONE {
+                                Codepoint('å')
+                            } else {
+                                Codepoint('Å')
+                            },
+                            138 => if modifiers & SHIFT == NONE {
+                                Codepoint('æ')
+                            } else {
+                                Codepoint('Æ')
+                            },
+                            // FIXME: see ù
+                            139 if modifiers & SHIFT == NONE => Codepoint('ç'), // else Codepoint('Ç')
+                            // FIXME: see ù
+                            140 if modifiers & SHIFT == NONE => Codepoint('è'), // else Codepoint('È')
+                            // FIXME: see ù
+                            141 if modifiers & SHIFT == NONE => Codepoint('é'), // else Codepoint('É')
+                            142 => if modifiers & SHIFT == NONE {
+                                Codepoint('ì')
+                            } else {
+                                Codepoint('Ì')
+                            },
+                            143 => if modifiers & SHIFT == NONE {
+                                Codepoint('ñ')
+                            } else {
+                                Codepoint('Ñ')
+                            },
+                            144 => if modifiers & SHIFT == NONE {
+                                Codepoint('ò')
+                            } else {
+                                Codepoint('Ò')
+                            },
+                            145 => if modifiers & SHIFT == NONE {
+                                Codepoint('ö')
+                            } else {
+                                Codepoint('Ö')
+                            },
+                            146 => if modifiers & SHIFT == NONE {
+                                Codepoint('ø')
+                            } else {
+                                Codepoint('Ø')
+                            },
+                            // FIXME
+                            // We could easily capitalize this on Shift, but it is unclear if we
+                            // should; the AZERTY layout is probably the most likely source of a
+                            // 'ù' key press, and the Shifted version of that key is %, not Ù.
+                            // All of this is somewhat broken anyway with AltGr, since that
+                            // isn't sent at all.
+                            // Note that this is only a problem for Alt+Shift and Ctrl+Shift.
+                            147 if modifiers & SHIFT == NONE => Codepoint('ù'),
+                            148 => if modifiers & SHIFT == NONE {
+                                Codepoint('ü')
+                            } else {
+                                Codepoint('Ü')
+                            },
+                            // For now, the sharp S does not typically share a key with its capital
+                            149 if modifiers & SHIFT == NONE => Codepoint('ß'),
                             150..=181 => if modifiers & SHIFT == NONE { // Cyrillic characters
                                 Codepoint(std::char::from_u32('а' as u32 + key_so_far as u32 - 150).unwrap())
                             } else {
@@ -646,6 +736,7 @@ impl InputStream {
                             } else {
                                 Codepoint('Ё')
                             },
+                            183 if modifiers & SHIFT == NONE => Codepoint('\u{0302}'), // Circumflex
                             _ => Special(key_so_far as i32 + 600)
                         };
                         return Ok(match key_type {
