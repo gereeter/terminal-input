@@ -109,7 +109,7 @@ unsafe fn define_if_necessary(def: &std::ffi::CStr, code: std::os::raw::c_int) -
 }
 
 // TODO: instead parse any keys with numbers after them according to this pattern
-const KNOWN_EXTRA_TERM_CAPABILITIES: &'static [(ConstCStr, Event)] = &[
+const KNOWN_EXTRA_TERM_CAPABILITIES: &[(ConstCStr, Event)] = &[
     (const_cstr!("kDC3"), KeyPress { modifiers: Modifiers(3 - 1), key: KeyInput::Special(ncurses::KEY_DC), is_repeat: false }),
     (const_cstr!("kDC4"), KeyPress { modifiers: Modifiers(4 - 1), key: KeyInput::Special(ncurses::KEY_DC), is_repeat: false }),
     (const_cstr!("kDC5"), KeyPress { modifiers: Modifiers(5 - 1), key: KeyInput::Special(ncurses::KEY_DC), is_repeat: false }),
@@ -306,7 +306,7 @@ impl InputStream {
             _xterm_modify_keys: xterm_modify_other_keys_guard,
             _kitty_full_mode: kitty_full_mode_guard,
 
-            extra_bound_keys: extra_bound_keys,
+            extra_bound_keys,
 
             in_progress_codepoint: 0,
             utf8_bytes_left: 0,
@@ -471,15 +471,15 @@ impl InputStream {
                     let base_code = code - 2300;
                     let modifiers = Modifiers((base_code / 10) as u8);
                     match base_code % 10 {
-                        0 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_UP), is_repeat: false }),
-                        1 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_DOWN), is_repeat: false }),
-                        2 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_RIGHT), is_repeat: false }),
-                        3 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_LEFT), is_repeat: false }),
-                        4 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_HOME), is_repeat: false }),
-                        5 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_END), is_repeat: false }),
-                        6 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_PPAGE), is_repeat: false }),
-                        7 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_NPAGE), is_repeat: false }),
-                        8 => return Ok(KeyPress { modifiers: modifiers, key: Special(ncurses::KEY_DC), is_repeat: false }),
+                        0 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_UP), is_repeat: false }),
+                        1 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_DOWN), is_repeat: false }),
+                        2 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_RIGHT), is_repeat: false }),
+                        3 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_LEFT), is_repeat: false }),
+                        4 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_HOME), is_repeat: false }),
+                        5 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_END), is_repeat: false }),
+                        6 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_PPAGE), is_repeat: false }),
+                        7 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_NPAGE), is_repeat: false }),
+                        8 => return Ok(KeyPress { modifiers, key: Special(ncurses::KEY_DC), is_repeat: false }),
                         _ => { }
                     }
                 },
@@ -548,11 +548,11 @@ impl InputStream {
                 KittyFullModeState::ParsingModifiers(key_type) => {
                     if let Codepoint(chr) = input {
                         // Decode base 64
-                        let decoded = if 'A' <= chr && chr <= 'Z' {
+                        let decoded = if ('A'..='Z').contains(&chr) {
                             Some(chr as u32 - 'A' as u32)
-                        } else if 'a' <= chr && chr <= 'z' {
+                        } else if ('a'..='z').contains(&chr) {
                             Some(chr as u32 - 'a' as u32 + 26)
-                        } else if '0' <= chr && chr <= '9' {
+                        } else if ('0'..='9').contains(&chr) {
                             Some(chr as u32 - '0' as u32 + 52)
                         } else if chr == '+' {
                             Some(62)
@@ -569,11 +569,11 @@ impl InputStream {
                 },
                 KittyFullModeState::ParsingKey(key_type, mode, key_so_far) => {
                     if let Codepoint(chr) = input {
-                        let decoded = if 'A' <= chr && chr <= 'Z' {
+                        let decoded = if ('A'..='Z').contains(&chr) {
                             Some(chr as u32 - 'A' as u32)
-                        } else if 'a' <= chr && chr <= 'z' {
+                        } else if ('a'..='z').contains(&chr) {
                             Some(chr as u32 - 'a' as u32 + 26)
-                        } else if '0' <= chr && chr <= '9' {
+                        } else if ('0'..='9').contains(&chr) {
                             Some(chr as u32 - '0' as u32 + 52)
                         } else {
                             ".-:+=^!/*?&<>()[]{}@%$#".chars().position(|c| c == chr).map(|i| i as u32 + 62)
@@ -740,9 +740,9 @@ impl InputStream {
                             _ => Special(key_so_far as i32 + 600)
                         };
                         return Ok(match key_type {
-                            KeyType::Press   => KeyPress { modifiers: modifiers, key: translated, is_repeat: false },
-                            KeyType::Repeat  => KeyPress { modifiers: modifiers, key: translated, is_repeat: true },
-                            KeyType::Release => KeyRelease { modifiers: modifiers, key: translated },
+                            KeyType::Press   => KeyPress { modifiers, key: translated, is_repeat: false },
+                            KeyType::Repeat  => KeyPress { modifiers, key: translated, is_repeat: true },
+                            KeyType::Release => KeyRelease { modifiers, key: translated },
                         });
                     }
                 }
