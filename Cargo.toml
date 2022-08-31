@@ -15,5 +15,5 @@ default = ["ncurses-ext"]
 ncurses-ext = []
 
 [dependencies]
-ncurses = "5.99.0"
+ncurses = "5.101.0"
 const-cstr = "0.3.0"

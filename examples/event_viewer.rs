@@ -2,9 +2,8 @@ extern crate ncurses;
 extern crate terminal_input;
 
 use std::io::Write as _;
-use std::os::raw::c_char;
 
-use terminal_input::{InputStream, Event, Modifiers, KeyInput};
+use terminal_input::{Event, InputStream, KeyInput, Modifiers};
 
 struct Screen(ncurses::WINDOW);
 
@@ -15,7 +14,7 @@ impl Drop for Screen {
 }
 
 fn main() {
-    unsafe { ncurses::ll::setlocale(ncurses::LC_ALL, b"\0".as_ptr() as *const c_char); }
+    ncurses::setlocale(ncurses::LcCategory::all, "");
     let screen = Screen(ncurses::initscr());
     ncurses::scrollok(screen.0, true);
     let stdin = std::io::stdin();
@@ -29,14 +28,14 @@ fn main() {
     loop {
         let event = input_stream.next_event();
         if let Some(ref mut file) = out_file {
-            write!(file, "{:?}\n", event).unwrap();
+            writeln!(file, "{:?}", event).unwrap();
         }
         ncurses::wprintw(screen.0, &format!("{:?}\n", event));
         ncurses::wrefresh(screen.0);
 
         if let Ok(Event::KeyPress { modifiers: Modifiers::CTRL, key: KeyInput::Codepoint('c'), .. })
              | Ok(Event::KeyPress { modifiers: Modifiers::CTRL, key: KeyInput::Codepoint('q'), .. }) = event {
-            return;         
+            return;
         }
     }
 }

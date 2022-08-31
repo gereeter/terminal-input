@@ -119,7 +119,7 @@ impl<'a> InputStream<'a> {
     pub unsafe fn init_with_ncurses(data: std::io::StdinLock<'a>, screen: ncurses::ll::WINDOW) -> InputStream<'a> {
         InputStream {
             inner: imp_ncurses::InputStream::init(screen),
-            screen: screen,
+            screen,
             _stdin_lock: data
         }
     }
